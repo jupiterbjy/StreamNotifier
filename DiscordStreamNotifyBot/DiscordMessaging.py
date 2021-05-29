@@ -1,7 +1,6 @@
 import json
 from discord_webhook import DiscordEmbed, DiscordWebhook
 
-
 VID_TARGET = "[vid_id]"
 DESC_TARGET = "[desc]"
 
@@ -39,8 +38,12 @@ def embed_closure(config_dict):
     def generate_embed(video_id, description):
         embed_config = config_dict["embed"]
 
-        dump_string = json.dumps(embed_config).replace(VID_TARGET, video_id).replace(DESC_TARGET, formatter(description))
-        formatted_dict = json.loads(dump_string)
+        dump_string = (
+            json.dumps(embed_config)
+            .replace(VID_TARGET, video_id)
+            .replace(DESC_TARGET, formatter(description))
+        )
+        formatted_dict = json.loads(dump_string.replace("\n", "\\n"))
 
         embed = DiscordEmbed(**formatted_dict)
 
