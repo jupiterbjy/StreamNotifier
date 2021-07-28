@@ -53,6 +53,6 @@ def embed_closure(config_dict, start_sep, end_sep) -> Callable[[str, str], Disco
 
 def webhook_closure(webhook_url: str):
     def template(**kwargs):
-        DiscordWebhook(url=webhook_url, **kwargs).execute()
+        DiscordWebhook(url=webhook_url, **kwargs, rate_limit_retry=True).execute()
 
     return template
