@@ -1,3 +1,4 @@
-from . import DiscordMessaging, TelegramPush
+from . import discord_push, telegram_push, twitter_push
 
-modules = DiscordMessaging.DiscordPush, TelegramPush.TelegramPush
+
+modules = discord_push.DiscordPush, telegram_push.TelegramPush, twitter_push.TwitterPush

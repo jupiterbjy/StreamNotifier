@@ -1,0 +1,30 @@
+{
+  "channel name": "",
+  "polling api": {
+    "twitch app id": "",
+    "twitch app secret": ""
+  },
+  "push methods": {
+    "discord": {
+      "webhook": "",
+      "content": "<@&discord_role_id> Live now! {}"
+    },
+    "telegram": {
+      "token": "",
+      "chat id": "",
+      "content": "add_some_mention_thingy_here {}"
+    },
+    "twitter": {
+      "api key": "",
+      "api secret key": "",
+      "bearer token": "Unused for now",
+      "access token": "",
+      "access token secret": "",
+      "content": "add_some_mention_thingy_here {}"
+    },
+    "reddit": {
+      "reddit api": "",
+      "content": "add_some_mention_thingy_here {}"
+    }
+  }
+}
