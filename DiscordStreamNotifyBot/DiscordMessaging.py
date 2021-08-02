@@ -1,17 +1,16 @@
 import json
+from typing import Callable
+
 from discord_webhook import DiscordEmbed, DiscordWebhook
 
 VID_TARGET = "[vid_id]"
 DESC_TARGET = "[desc]"
 
 
-def format_description(config_dict):
+def format_description(start, end):
     """
     Make sure to have separators in video descriptions if you're going to use it!
     """
-
-    start = config_dict["desc_start"]
-    end = config_dict["desc_end"]
 
     # bake function, like how cakes bake a loaf. Meow.
     def inner(description: str) -> str:
@@ -32,8 +31,8 @@ def format_description(config_dict):
     return inner
 
 
-def embed_closure(config_dict):
-    formatter = format_description(config_dict)
+def embed_closure(config_dict, start_sep, end_sep) -> Callable[[str, str], DiscordEmbed]:
+    formatter = format_description(start_sep, end_sep)
 
     def generate_embed(video_id, description):
         embed_config = config_dict["embed"]
@@ -54,6 +53,6 @@ def embed_closure(config_dict):
 
 def webhook_closure(webhook_url: str):
     def template(**kwargs):
-        DiscordWebhook(url=webhook_url, **kwargs).execute()
+        DiscordWebhook(url=webhook_url, **kwargs, rate_limit_retry=True).execute()
 
     return template

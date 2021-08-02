@@ -3,7 +3,6 @@
 import argparse
 import itertools
 import functools
-import logging
 import pathlib
 import json
 import datetime
@@ -13,11 +12,10 @@ from typing import Generator, List
 import trio
 from discord_webhook import DiscordWebhook
 from requests.exceptions import ConnectionError, MissingSchema
+from loguru import logger
 
-from log_stat_stub import wait_for_stream
 from youtube_api_client import GoogleClient, HttpError
 from RequestExtension import video_list_gen
-from log_initalizer import init_logger
 
 # End of import --------------
 
@@ -58,6 +56,65 @@ def format_closure(config_dict):
         return format_.format(message_, vid_id)
 
     return inner
+
+
+async def wait_for_stream(client_, video_id):
+    """
+    Literally does what it's named for. await until designated stream time.
+
+    Raises RuntimeError when stream is either seems to be canceled.
+    """
+
+    # check if actually it is active/upcoming stream
+
+    # Dispatch cases
+    status = client_.get_stream_status(video_id)
+
+    if status == "live":
+        logger.info(
+            "[{}] API returned `{}`, stream already active.", video_id, status
+        )
+        return
+
+    if status == "none":
+        logger.critical(
+            "[{}] API returned `{}`, is this a livestream?", video_id, status
+        )
+        raise RuntimeError("No upcoming/active stream.")
+
+    # upcoming state, fetch scheduled start time
+    start_time = client_.get_start_time(video_id)
+
+    # get timedelta
+    current = datetime.datetime.now(datetime.timezone.utc)
+
+    # workaround for negative timedelta case. Checks if start time is future
+    if start_time > current:
+        delta = (start_time - current).seconds
+        logger.info(
+            "[{}] Will wait for {} seconds until stream starts. Press Ctrl+C to terminate.",
+            video_id,
+            delta,
+        )
+
+        # Sleep until due time
+        await trio.sleep(delta)
+        logger.info("[{}] Awake, waiting for live state.", video_id)
+
+    # Check if stream is actually started
+    while status := client_.get_stream_status(video_id):
+        logger.debug("[{}] Status check: {}", video_id, status)
+
+        if status == "none":
+            logger.critical(
+                "[{}] API returned `{}`, is stream canceled?", video_id, status
+            )
+            raise RuntimeError("No upcoming/active stream.")
+
+        if status == "live":
+            return
+
+        await trio.sleep(5)
 
 
 def task_gen(
@@ -211,9 +268,6 @@ if __name__ == "__main__":
     args_ = parser.parse_args()
 
     # parsing end ===================================
-
-    logger = logging.getLogger("DiscordBot")
-    init_logger(logger, args_.verbose)
 
     json_data = json.loads(args_.path.read_text())
 

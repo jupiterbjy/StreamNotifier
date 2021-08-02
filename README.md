@@ -1,26 +1,53 @@
-Bot to get stream notifications using Google Data API v3 + Twitch API.
+## Introduction
 
-Built for one specific use-case: YouTube & Twitch simultaneous streaming condition. 
+Bot to get stream notifications, for specific situations shown below.
 
-```commandline
-usage: TwitchAPIMethod.py [-h] [-p CONFIG_PATH] [-i INTERVAL] twitch_channel_name client_id client_secret api url
+---
 
-positional arguments:
-  twitch_channel_name   Twitch channel name
-  client_id             Twitch Application ID
-  client_secret         Twitch Application Secret
-  api                   Google Data API key
-  url                   Discord webhook url
+## Polling methods
 
-optional arguments:
-  -h, --help            show this help message and exit
-  -p CONFIG_PATH, --path CONFIG_PATH
-                        Path to configuration json file. Default path is 'configuration.json' adjacent to this script
-  -i INTERVAL, --interval INTERVAL
-                        interval between checks in seconds. Default is 1.
-```
+- Twitch API + Google Data API v3
+  
+    Safe method when your streamer always streams on both YouTube and Twitch at the same time.
+    
+    - Pros
+        - Fast stream detection. Can poll up to 800 times per minute.
+        - Never triggers any ban from YouTube/Twitch as this purely utilizes their own APIs.
+    - Cons
+        - Can't detect new non-stream video uploads.
+        - Need to set up complex Twitch API.
+    
+    This method uses *Twitch API* to figure out when stream is started. In theory, 
+    can poll **800** times per minute - Thanks to rate limit of *TwitchAPI*.
+  
+    When *Twitch API* detects stream start event, it calls *Google Data API* to get active streams of given channels.
+    With that list, it fetches information about stream and format & send notifications.
+  
+- Google Data API v3
+    To be filled
+  
+---
 
-Do note that too low interval will cause quota to exceed.
+## Usages
+
+- Twitch API + Google Data API v3
+    ```commandline
+    usage: TwitchAPIMethod.py [-h] [-p CONFIG_PATH] [-i INTERVAL] twitch_channel_name client_id client_secret api url
+    
+    positional arguments:
+      twitch_channel_name   Twitch channel name
+      client_id             Twitch Application ID
+      client_secret         Twitch Application Secret
+      api                   Google Data API key
+      url                   Discord webhook url
+    
+    optional arguments:
+      -h, --help            show this help message and exit
+      -p CONFIG_PATH, --path CONFIG_PATH
+                            Path to configuration json file. Default path is 'configuration.json' adjacent to this script
+      -i INTERVAL, --interval INTERVAL
+                            interval between checks in seconds. Default is 1.
+    ```
 
 ---
 

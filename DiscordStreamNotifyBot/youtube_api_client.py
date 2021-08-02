@@ -8,7 +8,7 @@ Readability is 'amazing', even I can't read well. Will add docstrings when I can
 
 import pathlib
 import datetime
-from typing import Tuple, Callable
+from typing import Tuple
 
 from dateutil import parser as date_parser
 from googleapiclient.discovery import build
@@ -31,12 +31,66 @@ def build_youtube_resource(api_key=None):
     return youtube
 
 
+class VideoInfo:
+    def __init__(self, dict_: dict):
+        snippet = dict_["snippet"]
+
+        self.title = snippet["title"]
+        self.description = snippet["description"]
+        self.channel_title = snippet["channelTitle"]
+
+        self.published_at = snippet["publishedAt"]
+
+        self.channel_id = snippet["channelId"]
+        self.video_id = snippet["resourceId"]["videoId"]
+
+        self.live_content = snippet["liveBroadcastContent"]
+
+        self._thumbnail = snippet["thumbnails"]
+
+    @property
+    def is_upcoming(self):
+        return self.live_content == "upcoming"
+
+    @property
+    def is_live(self):
+        return self.live_content == "live"
+
+    def thumbnail_url(self, quality=2):
+        quality = quality if 0 <= quality <= 4 else 4
+
+        table = ("default", "medium", "high", "standard", "maxres")
+
+        return self._thumbnail[table[quality]]["url"]
+
+
 class GoogleClient:
     def __init__(self, api_key=None):
         self.youtube_client = build_youtube_resource(api_key)
         self.video_api = self.youtube_client.videos()
         self.channel_api = self.youtube_client.channels()
         self.search_api = self.youtube_client.search()
+        self.playlist_item_api = self.youtube_client.playlistItems()
+
+    def get_latest_videos(self, channel_id, fetch=3) -> Tuple[VideoInfo, ...]:
+        # https://stackoverflow.com/a/55373181/10909029
+
+        req = self.playlist_item_api.list(
+            part="snippet,contentDetails",
+            maxResults=fetch,
+            playlistId="UU" + channel_id[2:]
+        )
+
+        return tuple(map(VideoInfo, req.execute()["items"]))
+
+    def get_videos_info(self, *video_ids) -> Tuple[VideoInfo, ...]:
+
+        req = self.video_api.list(
+            part="snippet,contentDetails,statistics",
+            id=",".join(video_ids)
+        )
+
+        return tuple(map(VideoInfo, req.execute()["items"]))
 
     def get_stream_status(self, video_id) -> str:
         # This is most inefficient out of these methods.. but it's way simpler than first code.
@@ -71,7 +125,7 @@ class GoogleClient:
 
         return req.execute()["items"][0]["snippet"]["channelId"]
 
-    def get_subscribers_count(self, channel_id) -> Callable:
+    def get_subscribers_count(self, channel_id) -> int:
 
         req = self.channel_api.list(
             id=channel_id,
@@ -81,31 +135,34 @@ class GoogleClient:
 
         return req.execute()["items"][0]["statistics"]["subscriberCount"]
 
-    def get_upcoming_streams(self, channel_id: str) -> Tuple[str, ...]:
+    def get_upcoming_streams(self, channel_id: str) -> Tuple[VideoInfo, ...]:
+
         req = self.search_api.list(
             channelId=channel_id, part="snippet", type="video", eventType="upcoming"
         )
-        items = req.execute()["items"]
-        vid_ids = (item["id"]["videoId"] for item in items)
-        return tuple(vid_id for vid_id in vid_ids if self.get_stream_status(vid_id) != "none")
 
-    def get_live_streams(self, channel_id: str) -> Tuple[str, ...]:
+        return tuple(vid_info for vid_info in map(VideoInfo, req.execute()["items"]) if vid_info.is_upcoming)
+
+    def get_live_streams(self, channel_id: str) -> Tuple[VideoInfo, ...]:
+
         req = self.search_api.list(
             channelId=channel_id, part="snippet", type="video", eventType="live"
         )
-        items = req.execute()["items"]
-        vid_ids = (item["id"]["videoId"] for item in items)
-        return tuple(vid_id for vid_id in vid_ids if self.get_stream_status(vid_id) != "none")
+
+        return tuple(vid_info for vid_info in map(VideoInfo, req.execute()["items"]) if vid_info.is_live)
 
     def get_start_time(self, video_id) -> datetime.datetime:
+
         req = self.video_api.list(
             id=video_id,
             part="liveStreamingDetails",
             fields="items/liveStreamingDetails/scheduledStartTime",
         )
+
         time_string = req.execute()["items"][0]["liveStreamingDetails"][
             "scheduledStartTime"
         ]
 
         start_time = date_parser.isoparse(time_string)
+
         return start_time
