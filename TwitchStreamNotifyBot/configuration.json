@@ -7,12 +7,12 @@
   "push methods": {
     "discord": {
       "webhook": "",
-      "content": "<@&discord_role_id> Live now! {}"
+      "content": "<@&discord_role_id> Live now! {}\nStarted at: {started_at}\nGame: {game_name}"
     },
     "telegram": {
       "token": "",
-      "chat id": "",
-      "content": "add_some_mention_thingy_here {}"
+      "chat id": [],
+      "content": "Test Push {link}\nStarted at: {started_at}\nGame: {game_name}"
     },
     "twitter": {
       "api key": "",
@@ -20,7 +20,7 @@
       "bearer token": "Unused for now",
       "access token": "",
       "access token secret": "",
-      "content": "add_some_mention_thingy_here {}"
+      "content": "Bot Twitter push test\n\n{link}\nStarted at: {started_at}\nGame: {game_name}"
     },
     "reddit": {
       "reddit api": "",
