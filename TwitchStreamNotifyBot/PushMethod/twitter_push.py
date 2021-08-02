@@ -1,9 +1,13 @@
+from typing import TYPE_CHECKING
 from typing import Union
 
 import tweepy
 from loguru import logger
 
 from .base import Push
+
+if TYPE_CHECKING:
+    from TwitchStreamNotifyBot.twitch_api_client import TwitchChannel
 
 
 class TwitterPush(Push):
@@ -38,8 +42,11 @@ class TwitterPush(Push):
 
         logger.info("Twitch auth complete.")
 
-    def send(self, content):
+    def send(self, link, channel_object: "TwitchChannel"):
 
-        self.api.update_status(self.content.format(content))
+        dict_ = channel_object.as_dict()
+        dict_["link"] = link
+
+        self.api.update_status(self.content.format(**dict_))
 
         logger.info("Notified to twitter.")

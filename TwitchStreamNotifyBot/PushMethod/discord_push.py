@@ -1,9 +1,13 @@
+from typing import TYPE_CHECKING
 import time
 
 from loguru import logger
 from discord_webhook import DiscordWebhook
 
 from .base import Push
+
+if TYPE_CHECKING:
+    from TwitchStreamNotifyBot.twitch_api_client import TwitchChannel
 
 
 class DiscordPush(Push):
@@ -36,11 +40,14 @@ class DiscordPush(Push):
 
         logger.info("Verification of discord webhook url complete.")
 
-    def send(self, content):
+    def send(self, link, channel_object: "TwitchChannel"):
+
+        dict_ = channel_object.as_dict()
+        dict_["link"] = link
 
         DiscordWebhook(
             url=self.webhook_url,
-            content=self.content.format(content),
+            content=self.content.format(**dict_),
             rate_limit_retry=True,
         ).execute()
 

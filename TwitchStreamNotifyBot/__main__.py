@@ -5,7 +5,6 @@ import argparse
 import pathlib
 import time
 import json
-from collections import deque
 from typing import Callable
 
 from loguru import logger
@@ -16,6 +15,7 @@ from twitch_api_client import TwitchClient
 
 
 ROOT = pathlib.Path(__file__).parent.absolute()
+USE_GET_STREAM = True
 
 
 class Notified:
@@ -40,8 +40,6 @@ class RequestInstance:
 
         self.channel_name = channel_name
 
-        self.cached = deque(maxlen=5)
-
         self.callback = callback
 
     def start_checking(self):
@@ -50,25 +48,38 @@ class RequestInstance:
 
         logger.info("Found user: {}", user)
 
-        while True:
-            output = self.client.get_stream(user.id)
+        if USE_GET_STREAM:
+            while True:
+                output = self.client.get_stream(user.id)
 
-            if output and output.type == "live" and output.started_at not in self.notified:
-                logger.info("Found an active live stream for channel {}", self.channel_name)
+                if output and output.type == "live" and output.started_at not in self.notified:
+                    logger.info("Found an active live stream for channel {}", self.channel_name)
 
-                self.notified.write(output.started_at)
-                self.callback(f"\nhttps://twitch.tv/{self.channel_name}")
+                    self.notified.write(output.started_at)
+                    self.callback(f"\nhttps://twitch.tv/{self.channel_name}", output)
 
-            time.sleep(2)
+                time.sleep(2)
+
+        else:
+            while True:
+                output = self.client.search_channel(user.login)
+
+                if output.is_live and output.started_at not in self.notified:
+                    logger.info("Found an active live stream for channel {}", self.channel_name)
+
+                    self.notified.write(output.started_at)
+                    self.callback(f"\nhttps://twitch.tv/{self.channel_name}", output)
+
+                time.sleep(2)
 
 
 def callback_notify_closure(notify_callbacks):
 
-    def inner(content="test run"):
+    def inner(content, channel_object):
         logger.info("Notifier callback started.")
         for callback in notify_callbacks:
             try:
-                callback.send(content)
+                callback.send(content, channel_object)
             except Exception:
                 traceback.print_exc()
 

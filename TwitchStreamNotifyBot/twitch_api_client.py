@@ -81,6 +81,9 @@ class TwitchChannel:
         string = [f"{k}={v}" for k, v in vars(self).items()]
         return f"TwitchChannel({', '.join(string)})"
 
+    def as_dict(self):
+        return vars(self)
+
 
 class TwitchClient:
     def __init__(self, client_id: str, client_secret: str):
@@ -130,11 +133,12 @@ class TwitchClient:
         self.header = header
 
     @staticmethod
-    def _check_and_raise_error(req: requests.Response):
+    def _check_and_raise_error(req: requests.Response, log_response=True):
 
         json_ = req.json()
 
-        logger.debug("response: {}\n{}", req, pformat(json_, indent=2))
+        if log_response:
+            logger.debug("response: {}\n{}", req, pformat(json_, indent=2))
 
         if req.status_code != 200:
             raise RuntimeError(f"Got Problem calling API, Response:\n{pformat(json_, indent=2)}")
@@ -152,7 +156,7 @@ class TwitchClient:
                 return dict_
 
         logger.warning("Could not find exact match of user {}", value)
-        return None
+        raise RuntimeError(f"Can't find exact match of user {value}")
 
     def get_user(self, user_name) -> TwitchUser:
         self.generate_new_header()
@@ -186,7 +190,13 @@ class TwitchClient:
         req = self.session.get(req_url, headers=self.header)
         logger.info(req_url)
 
-        if self._check_and_raise_error(req):
+        try:
+            matched = self._exact_match(req, "broadcaster_login", channel_name)
+            logger.debug("response: {}\n{}", req, pformat(matched, indent=2))
+        except IndexError:
+            logger.debug("response: {}\n{}", req, pformat(req.json(), indent=2))
+
+        if self._check_and_raise_error(req, log_response=False):
             return TwitchChannel(**self._exact_match(req, "broadcaster_login", channel_name))
 
         return None
@@ -220,4 +230,3 @@ class TwitchClient:
         self._check_and_raise_error(req)
 
         return TwitchGame(**req.json()["data"][0])
-

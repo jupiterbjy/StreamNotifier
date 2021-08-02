@@ -1,10 +1,14 @@
-import traceback
+from typing import TYPE_CHECKING
 from typing import Union
+import traceback
 
-import telegram
 from loguru import logger
+import telegram
 
 from .base import Push
+
+if TYPE_CHECKING:
+    from TwitchStreamNotifyBot.twitch_api_client import TwitchChannel
 
 
 class TelegramPush(Push):
@@ -33,6 +37,9 @@ class TelegramPush(Push):
         for chat_id in self.chat_ids:
             for update in updates:
                 update: telegram.Update
+
+                logger.debug("Chat id [{}] / name [{}]", update.effective_chat.id, update.effective_chat.title)
+
                 if update.effective_chat.id == chat_id:
                     logger.info("Found effective chat {}", chat_id)
                     break
@@ -45,13 +52,25 @@ class TelegramPush(Push):
         self.bot = bot
         logger.info("Verification of telegram token completed.")
 
-    def send(self, content):
+    def send(self, link, channel_object: "TwitchChannel"):
+
+        dict_ = channel_object.as_dict()
+        dict_["link"] = link
+
+        text = self.content.format(**dict_)
+
         for chat_id in self.chat_ids:
             try:
-                self.bot.send_message(
-                    chat_id=chat_id, text=self.content.format(content)
+                message: telegram.Message = self.bot.send_message(
+                    chat_id=chat_id, text=text
                 )
             except Exception:
                 traceback.print_exc()
+
+            else:
+                try:
+                    self.bot.pin_chat_message(message.chat_id, message.message_id)
+                except Exception:
+                    traceback.print_exc()
 
         logger.info("Notified to telegram channel {}.", self.chat_ids)
