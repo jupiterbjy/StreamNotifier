@@ -1,109 +1,65 @@
 #!/usr/bin/python3
 
+import traceback
 import argparse
-import itertools
 import pathlib
 import time
 import json
-from pprint import pprint, pformat
 from collections import deque
-from datetime import timedelta, datetime
-from typing import Tuple, Callable
+from typing import Callable
 
-import requests
 from loguru import logger
 
 
 from PushMethod import modules
+from twitch_api_client import TwitchClient
 
 
 ROOT = pathlib.Path(__file__).parent.absolute()
 
 
-def get_new_token(client_id, client_secret) -> Tuple[str, int]:
-    url = "https://id.twitch.tv/oauth2/token?client_id={}&client_secret={}&grant_type=client_credentials&scope="
+class Notified:
+    def __init__(self):
+        self.file = ROOT.joinpath("Cache.json")
+        self.last_notified = self.file.read_text("utf8") if self.file.exists() else ""
 
-    formatted = url.format(client_id, client_secret)
-    logger.debug(formatted)
+    def write(self, new_time):
+        self.last_notified = new_time
+        self.file.write_text(new_time, "utf8")
 
-    req = requests.post(formatted)
-
-    dict_ = req.json()
-
-    token = dict_["access_token"]
-    expires_in = dict_["expires_in"]
-
-    return token, expires_in
+    def __contains__(self, item):
+        return item == self.last_notified
 
 
 class RequestInstance:
-    def __init__(self, channel_name, client_id, client_secret, callback: Callable):
-        self.client_id = client_id
-        self.client_secret = client_secret
+    def __init__(self, client: TwitchClient, channel_name, callback: Callable):
+
+        self.notified = Notified()
+
+        self.client = client
 
         self.channel_name = channel_name
-        self.header = {}
-        self.next_check = time.time()
 
         self.cached = deque(maxlen=5)
 
-        self.generate_new_header()
-
         self.callback = callback
 
-    def generate_new_header(self):
-        token, eta = get_new_token(self.client_id, self.client_secret)
-
-        next_checkup = datetime.now() + timedelta(seconds=round(eta))
-
-        header = {
-            "Authorization": f"Bearer {token}",
-            "Client-ID": f"{self.client_id}"
-        }
-
-        logger.info("Got token [{}]. Will expire in {}", token, (next_checkup - datetime.now()).total_seconds())
-
-        self.header = header
-        self.next_check = next_checkup.timestamp()
-
-    def exact_match(self, response):
-
-        for dict_ in response.json()["data"]:
-            if dict_["broadcaster_login"] == self.channel_name:
-                return dict_
-
-        logger.warning("Could not find exact match of user {}", self.channel_name)
-        return None
-
     def start_checking(self):
-        request_url = f"https://api.twitch.tv/helix/search/channels?query={self.channel_name}"
-        # user_id_query = f"https://api.twitch.tv/helix/users?&id={self.channel_name}"
 
-        with requests.session() as session:
+        user = self.client.get_user(self.channel_name)
 
-            # get user ID
-            req = session.get(request_url, headers=self.header)
+        logger.info("Found user: {}", user)
 
-            while True:
-                while time.time() < self.next_check:
-                    req = session.get(request_url, headers=self.header)
+        while True:
+            output = self.client.get_stream(user.id)
 
-                    logger.debug("response: {}", req)
-                    matched = self.exact_match(req)
-                    logger.debug("Found matching: \n{}", pformat(matched, indent=2))
+            if output and output.type == "live" and output.started_at not in self.notified:
+                logger.info("Found an active live stream for channel {}", self.channel_name)
 
-                    if matched["is_live"] and matched["started_at"] not in self.cached:
-                        self.cached.append(matched["started_at"])
-                        logger.info("Found an active live stream for channel {}", self.channel_name)
+                self.notified.write(output.started_at)
+                self.callback(f"\nhttps://twitch.tv/{self.channel_name}")
 
-                        self.callback(f"\nhttps://twitch.tv/{self.channel_name}")
-
-                    logger.debug("Rate left: {} Date: {}", req.headers["Ratelimit-Remaining"], req.headers["Date"])
-
-                    time.sleep(5)
-
-                # Get new token
-                self.generate_new_header()
+            time.sleep(2)
 
 
 def callback_notify_closure(notify_callbacks):
@@ -111,7 +67,10 @@ def callback_notify_closure(notify_callbacks):
     def inner(content="test run"):
         logger.info("Notifier callback started.")
         for callback in notify_callbacks:
-            callback(content)
+            try:
+                callback.send(content)
+            except Exception:
+                traceback.print_exc()
 
     return inner
 
@@ -124,18 +83,26 @@ def main():
     client_id = config["polling api"]["twitch app id"]
     client_secret = config["polling api"]["twitch app secret"]
 
+    client = TwitchClient(client_id, client_secret)
+
     logger.info("Target Channel: {}", channel_name)
 
     callback_list = []
 
     # verify
     for method in modules:
-        if method.verify(config):
-            callback_list.append(method.send_closure(config))
+        try:
+            instance = method(config["push methods"])
+        except Exception:
+
+            logger.warning("Got Error initializing {}", method.__name__)
+            traceback.print_exc()
+        else:
+            callback_list.append(instance)
 
     callback_unified = callback_notify_closure(callback_list)
 
-    req_instance = RequestInstance(channel_name, client_id, client_secret, callback_unified)
+    req_instance = RequestInstance(client, channel_name, callback_unified)
 
     req_instance.start_checking()
 
