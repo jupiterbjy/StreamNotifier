@@ -2,11 +2,11 @@
 
 This uses Twitch API to determine stream status and broadcast to supported respective platforms.
 
-Primarily built for Cyannyan's Twitch stream notifications.
+Primarily built for [Cyannyan](https://cyannyan.com)'s Twitch stream notifications.
+
+---
 
 ## Config
-
-Contents will be formatted with link to channel.
 
 ```json
 {
@@ -40,6 +40,44 @@ Contents will be formatted with link to channel.
   }
 }
 
+```
+
+---
+
+## Config descriptions
+
+Contents will be formatted with keywords.
+
+Available `content` format keywords are:
+```python
+'game_name': 'osu!',
+'title': 'Road to 5* | Join Multi! | VTuber Cyan',
+'live': 'https://www.twitch.tv/cyannyan39'
+'started_at': '2021-08-03T02:05:11Z',
+
+'game_id': '21465',
+'id': '43109063245',
+'is_mature': False,
+'language': 'en',
+'tag_ids': ['6ea6bca4-4712-4ab9-a906-e3336a9d8039'],
+'thumbnail_url': 'https://static-cdn.jtvnw.net/previews-ttv/live_user_cyannyan39-{width}x{height}.jpg',
+
+'type': 'live',
+'user_id': '585389049',
+'user_login': 'cyannyan39',
+'user_name': 'CyanNyan39',
+'viewer_count': 19
+```
+
+These keywords are formatted by `str.format()`. For example:
+```python
+message = "Test Push {link}\nStarted at: {started_at}\nGame: {game_name}".format(**dict)
+```
+
+Becomes
+
+```python
+message = "Test Push https://www.twitch.tv/cyannyan39\nStarted at: 2021-08-03T02:05:11Z\nGame: osu!"
 ```
 
 ---
