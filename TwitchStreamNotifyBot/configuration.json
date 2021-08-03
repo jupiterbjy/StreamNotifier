@@ -6,7 +6,7 @@
   },
   "push methods": {
     "discord": {
-      "webhook": "",
+      "webhook url": "",
       "content": "<@&discord_role_id> Live now! {}\nStarted at: {started_at}\nGame: {game_name}"
     },
     "telegram": {
