@@ -1,7 +1,4 @@
-discord-webhook
 requests
-google-api-python-client
 loguru
-python-dateutil
 tweepy
-python-telegram-bot
+discord-webhook
