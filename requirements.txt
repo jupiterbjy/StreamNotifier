@@ -2,3 +2,4 @@ requests
 loguru
 tweepy
 discord-webhook
+python-telegram-bot
