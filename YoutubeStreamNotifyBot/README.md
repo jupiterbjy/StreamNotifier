@@ -1,6 +1,6 @@
 ## YoutubeStreamNotifyBot
 
-This uses Twitch API to determine stream status and broadcast to supported respective platforms.
+This uses Youtube API to determine stream status and broadcast to supported respective platforms.
 
 Primarily built for [Cyannyan](https://cyannyan.com)'s Youtube stream notifications.
 
@@ -59,12 +59,12 @@ Any misconfiguration will render respective push platform unusable. Please keep 
   "push methods": {
     "discord": {
       "webhook url": "<discord_webhook_url>",
-      "content": "<@&discord_role_id> Live now! {}\nStarted at: {started_at}\nGame: {game_name}"
+      "content": "Test push\n\ntitle: [{title}]\ndescription: [{description}]\ntype: [{privacy_status}]\nurl: [{stream_url}]"
     },
     "telegram": {
       "token": "<telegram_bot_token>",
       "chat id": ["<telegram_chat_id_here_as_integer>"],
-      "content": "Test Push {link}\nStarted at: {started_at}\nGame: {game_name}"
+      "content": "Test push\n\ntitle: [{title}]\ndescription: [{description}]\ntype: [{privacy_status}]\nurl: [{stream_url}]"
     },
     "twitter": {
       "api key": "<api key>",
@@ -72,7 +72,7 @@ Any misconfiguration will render respective push platform unusable. Please keep 
       "bearer token": "Unused for now",
       "access token": "<access token>",
       "access token secret": "<access token secret>",
-      "content": "Bot Twitter push test\n\n{link}\nStarted at: {started_at}\nGame: {game_name}"
+      "content": "Test push\n\ntitle: [{title}]\ndescription: [{description}]\ntype: [{privacy_status}]\nurl: [{stream_url}]"
     },
     "reddit": {
       "reddit api": "Not_available_yet",
@@ -130,7 +130,7 @@ message = "Test push\n\ntitle: [{title}]\ndescription: [{description}]\ntype: [{
 Then it becomes
 
 ```python
-message = "title: [Notification Testing-1]\ndescription: [Testing notifications]\ntype: [public]\nurl: [https://www.youtube.com/watch?v=LE6VO0KNbuY]"
+message = "Test push\n\ntitle: [Notification Testing-1]\ndescription: [Testing notifications]\ntype: [public]\nurl: [https://www.youtube.com/watch?v=LE6VO0KNbuY]"
 ```
 
 ---
@@ -143,9 +143,6 @@ message = "title: [Notification Testing-1]\ndescription: [Testing notifications]
 - Make sure Twitter app has permission to write(and read if possible)
 
     ![image](https://user-images.githubusercontent.com/26041217/128051987-ea4a6749-8668-411f-a94f-9a22d0236b7b.png)
-
-
-- Twitter *DOES NOT* allow same content, and since the only thing that is unique to every Twitch streams are `started_at`, it is recommended to add it in content.
 
 ---
 
