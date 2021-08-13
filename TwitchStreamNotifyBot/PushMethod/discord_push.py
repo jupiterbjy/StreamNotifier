@@ -23,7 +23,7 @@ class DiscordPush(Push):
 
         if not self.webhook_url:
             logger.info("Discord webhook url empty, skipping.")
-            raise ValueError("Discord webhook URL emtpy")
+            raise ValueError("Discord webhook url empty, skipping.")
 
         delete_delay = 1
 

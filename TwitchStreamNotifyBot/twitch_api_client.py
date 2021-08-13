@@ -208,15 +208,16 @@ class TwitchClient:
 
         return None
 
-    def get_stream(self, user_id) -> Union[TwitchChannel, None]:
+    def get_stream(self, user_id, log=True) -> Union[TwitchChannel, None]:
         self.generate_new_header()
 
         req_url = f"https://api.twitch.tv/helix/streams?user_id={user_id}"
 
         req = self.session.get(req_url, headers=self.header)
-        logger.info(req_url)
+        if log:
+            logger.info(req_url)
 
-        if self._check_and_raise_error(req):
+        if self._check_and_raise_error(req, log):
             return TwitchChannel(**req.json()["data"][0])
 
         return None

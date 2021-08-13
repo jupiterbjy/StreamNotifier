@@ -91,7 +91,7 @@ Available `content` format keywords are:
 # General keywords
 'game_name': 'osu!'
 'title': 'Road to 5* | Join Multi! | VTuber Cyan'
-'live': 'https://www.twitch.tv/cyannyan39'
+'link': 'https://www.twitch.tv/cyannyan39'
 'started_at': '2021-08-03T02:05:11Z'
 
 # included, but not frequently used.

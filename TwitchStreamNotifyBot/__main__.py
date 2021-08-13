@@ -49,8 +49,9 @@ class RequestInstance:
         logger.info("Found user: {}", user)
 
         if USE_GET_STREAM:
+            logger.info("Started listening using GET_STREAM.")
             while True:
-                output = self.client.get_stream(user.id)
+                output = self.client.get_stream(user.id, log=False)
 
                 if output and output.type == "live" and output.started_at not in self.notified:
                     logger.info("Found an active live stream for channel {}", self.channel_name)

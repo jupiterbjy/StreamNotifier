@@ -26,30 +26,40 @@ class TelegramPush(Push):
     def auth(self):
 
         if not all((self.token, self.chat_ids, self.content)):
-            logger.info("One or more Telegram parameters empty, skipping.")
-            raise ValueError()
+            logger.info("One or more Telegram parameters are empty, skipping.")
+            raise ValueError("One or more Telegram parameters are empty, skipping.")
 
         logger.info("Verification of telegram token started.")
 
         bot = telegram.Bot(token=self.token)
         updates = bot.get_updates()
 
-        for chat_id in self.chat_ids:
-            for update in updates:
-                update: telegram.Update
+        effective_chats = set()
 
-                logger.debug("Chat id [{}] / name [{}]", update.effective_chat.id, update.effective_chat.title)
+        # populate set
+        update: telegram.Update
 
-                if update.effective_chat.id == chat_id:
-                    logger.info("Found effective chat {}", chat_id)
-                    break
-            else:
-                raise AssertionError(
-                    f"Cannot find given chat id {self.chat_ids}, is bot added to the channel?"
+        for update in updates:
+            effective_chats.add(update.effective_chat.id)
+
+        # check diff
+        not_found = set(self.chat_ids) - effective_chats
+
+        if not_found:
+            for chat_id in not_found:
+                logger.warning(
+                    "Cannot find group chat id {}, is bot added to the group? Is group inactive?",
+                    chat_id,
                 )
 
         self.bot = bot
-        logger.info("Verification of telegram token completed.")
+
+        reachable = len(self.chat_ids) - len(not_found)
+        logger.info(
+            "Verification of telegram token completed. {} of {} chats are visible.",
+            reachable,
+            len(self.chat_ids),
+        )
 
     def send(self, channel_object: "LiveBroadcast"):
 
@@ -63,11 +73,13 @@ class TelegramPush(Push):
                 )
             except Exception:
                 traceback.print_exc()
-
+                logger.warning("Failed to send to group chat id {}.", chat_id)
             else:
+                logger.info("Notified to telegram channel {}.", chat_id)
                 try:
                     self.bot.pin_chat_message(message.chat_id, message.message_id)
                 except Exception:
                     traceback.print_exc()
-                else:
-                    logger.info("Notified to telegram channel {}.", chat_id)
+                    logger.info(
+                        "Not enough permission to pin on telegram channel {}.", chat_id
+                    )

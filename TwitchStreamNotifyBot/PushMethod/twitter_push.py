@@ -30,7 +30,7 @@ class TwitterPush(Push):
 
         if not all((self.api_key, self.api_secret, self.token, self.token_secret)):
             logger.info("One or more Twitter parameters empty, skipping.")
-            raise ValueError()
+            raise ValueError("One or more Twitter parameters empty, skipping.")
 
         logger.info("Twitch auth started.")
 
