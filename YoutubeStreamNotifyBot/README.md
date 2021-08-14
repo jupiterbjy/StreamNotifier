@@ -13,12 +13,18 @@ Primarily built for [Cyannyan](https://cyannyan.com)'s Youtube stream notificati
 ### Parameters
 
 ```
-usage: [-h] [-p CONFIG_PATH]
+usage: __main__.py [-h] [-p CONFIG_PATH] [-c CACHE_PATH] [-t]
 
 optional arguments:
   -h, --help            show this help message and exit
   -p CONFIG_PATH, --path CONFIG_PATH
-                        Path to configuration json file. Default path is 'configuration.json' adjacent to this script
+                        Path to configuration json file. Default path is
+                        'configuration.json' adjacent to this script
+  -c CACHE_PATH, --cache CACHE_PATH
+                        Path where cache file will be. Default path is
+                        'cache.json' adjacent to this script
+  -t, --test            Enable test mode, this does not actually push to
+                        platforms.
 ```
 
 ### Installation 
