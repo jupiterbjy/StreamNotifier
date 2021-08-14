@@ -20,7 +20,7 @@ USE_GET_STREAM = True
 
 class Notified:
     def __init__(self):
-        self.file = ROOT.joinpath("Cache.json")
+        self.file = args.cache
         self.last_notified = self.file.read_text("utf8") if self.file.exists() else ""
 
     def write(self, new_time):
@@ -133,7 +133,17 @@ if __name__ == "__main__":
         default=ROOT.joinpath("configuration.json"),
         help="Path to configuration json file. Default path is 'configuration.json' adjacent to this script",
     )
+    parser.add_argument(
+        "-c",
+        "--cache",
+        metavar="CACHE_PATH",
+        type=pathlib.Path,
+        default=ROOT.joinpath("cache.json"),
+        help="Path where cache file will be. Default path is 'cache.json' adjacent to this script",
+    )
     args = parser.parse_args()
+
+    args.cache.touch(exist_ok=True)
 
     # parsing end ===================================
 

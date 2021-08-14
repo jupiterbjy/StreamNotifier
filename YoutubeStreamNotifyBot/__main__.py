@@ -21,7 +21,7 @@ INTERVAL = 10
 
 class Notified:
     def __init__(self):
-        self.file = ROOT.joinpath("last_pushed")
+        self.file = args.cache
         self.last_notified = self.file.read_text("utf8") if self.file.exists() else ""
 
     def write(self, new_id):
@@ -49,7 +49,7 @@ def callback_notify_closure(notify_callbacks):
 def start_checking(client: YoutubeClient, callback: Callable, interval):
     notified = Notified()
 
-    logger.info("Started polling for streams.")
+    logger.info("Started polling for streams, interval: {}", interval)
 
     while True:
         active = client.get_active_user_broadcasts(max_results=1)
@@ -112,13 +112,15 @@ if __name__ == "__main__":
     )
     parser.add_argument(
         "-c",
-        "--client-secret",
-        metavar="CLIENT_SECRET_PATH",
+        "--cache",
+        metavar="CACHE_PATH",
         type=pathlib.Path,
-        default=ROOT.joinpath("oauth_token.json"),
-        help="Path to configuration json file. Default path is 'configuration.json' adjacent to this script",
+        default=ROOT.joinpath("cache.json"),
+        help="Path where cache file will be. Default path is 'cache.json' adjacent to this script",
     )
     args = parser.parse_args()
+
+    args.cache.touch(exist_ok=True)
 
     # parsing end ===================================
 
