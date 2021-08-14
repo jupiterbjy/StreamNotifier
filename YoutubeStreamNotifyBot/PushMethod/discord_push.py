@@ -1,8 +1,9 @@
 from typing import TYPE_CHECKING
-import time
+from pprint import pformat
 
 from loguru import logger
 from discord_webhook import DiscordWebhook
+import requests
 
 from .base import Push
 
@@ -25,18 +26,12 @@ class DiscordPush(Push):
             logger.info("Discord webhook url empty, skipping.")
             raise ValueError("Discord webhook url empty, skipping.")
 
-        delete_delay = 1
-
         logger.info("Verification of discord webhook url started.")
 
-        # verify url
-        webhook = DiscordWebhook(
-            url=self.webhook_url,
-            content=f"Webhook Verified! WIll be auto deleted in {delete_delay} seconds!",
-        )
-        sent = webhook.execute()
-        time.sleep(delete_delay)
-        webhook.delete(sent)
+        output = requests.get(self.webhook_url).json()
+
+        if not output:
+            raise AssertionError(f"Webhook verification failed! Response:\n{pformat(output)}")
 
         logger.info("Verification of discord webhook url complete.")
 
