@@ -33,11 +33,21 @@ class Notified:
 
 
 def callback_notify_closure(notify_callbacks):
+    test = args.test
+
+    if test:
+        logger.warning("Test mode enabled, will not push to platforms")
 
     def inner(channel_object: LiveBroadcast):
         logger.info("Notifier callback started for stream {}", channel_object)
         for callback in notify_callbacks:
-            logger.info("Pushing for {}", type(callback).__name__)
+
+            if test:
+                logger.info("Test mod, skipping {}", type(callback).__name__)
+                continue
+            else:
+                logger.info("Pushing for {}", type(callback).__name__)
+
             try:
                 callback.send(channel_object)
             except Exception:
@@ -117,6 +127,13 @@ if __name__ == "__main__":
         type=pathlib.Path,
         default=ROOT.joinpath("cache.json"),
         help="Path where cache file will be. Default path is 'cache.json' adjacent to this script",
+    )
+    parser.add_argument(
+        "-t",
+        "--test",
+        action="store_true",
+        default=False,
+        help="Enable test mode, this does not actually push to platforms.",
     )
     args = parser.parse_args()
 
