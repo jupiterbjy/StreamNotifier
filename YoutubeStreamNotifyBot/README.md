@@ -65,12 +65,12 @@ Any misconfiguration will render respective push platform unusable. Please keep 
   "push methods": {
     "discord": {
       "webhook url": "<discord_webhook_url>",
-      "content": "Test push\n\ntitle: [{title}]\ndescription: [{description}]\ntype: [{privacy_status}]\nurl: [{stream_url}]"
+      "content": "Test push\n\ntitle: [{title}]\ndescription: [{description}]\ntype: [{privacy_status}]\nurl: [{link}]"
     },
     "telegram": {
       "token": "<telegram_bot_token>",
       "chat id": ["<telegram_chat_id_here_as_integer>"],
-      "content": "Test push\n\ntitle: [{title}]\ndescription: [{description}]\ntype: [{privacy_status}]\nurl: [{stream_url}]"
+      "content": "Test push\n\ntitle: [{title}]\ndescription: [{description}]\ntype: [{privacy_status}]\nurl: [{link}]"
     },
     "twitter": {
       "api key": "<api key>",
@@ -78,7 +78,7 @@ Any misconfiguration will render respective push platform unusable. Please keep 
       "bearer token": "Unused for now",
       "access token": "<access token>",
       "access token secret": "<access token secret>",
-      "content": "Test push\n\ntitle: [{title}]\ndescription: [{description}]\ntype: [{privacy_status}]\nurl: [{stream_url}]"
+      "content": "Test push\n\ntitle: [{title}]\ndescription: [{description}]\ntype: [{privacy_status}]\nurl: [{link}]"
     },
     "reddit": {
       "reddit api": "Not_available_yet",
@@ -100,7 +100,7 @@ Available `content` format keywords are:
 {
   'title': 'Testing API-2',
   'description': 'Testing API',
-  'stream_url': 'https://www.youtube.com/watch?v=xXKDbi5LbP4',
+  'link': 'https://www.youtube.com/watch?v=xXKDbi5LbP4',
   
   'actual_end_time': None,
   'actual_start_time': datetime.datetime(2021, 8, 10, 12, 35, 50, tzinfo=tzutc()),
@@ -124,7 +124,7 @@ Available `content` format keywords are:
 
 These keywords are formatted by `str.format()`. For example:
 ```python
-"Test push\n\ntitle: [{title}]\ndescription: [{description}]\ntype: [{privacy_status}]\nurl: [{stream_url}]"
+"Test push\n\ntitle: [{title}]\ndescription: [{description}]\ntype: [{privacy_status}]\nurl: [{link}]"
 ```
 
 Will be formatted like:

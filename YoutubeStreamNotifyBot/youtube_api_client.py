@@ -164,7 +164,7 @@ class LiveBroadcast:
         return f"<LiveBroadcast instance of stream {self.id}>"
 
     @LazyProperty
-    def stream_url(self):
+    def link(self):
         """
         This is Property - access like an attribute
 
