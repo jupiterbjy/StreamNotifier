@@ -62,20 +62,22 @@ def start_checking(client: YoutubeClient, callback: Callable, interval):
     logger.info("Started polling for streams, interval: {}", interval)
 
     while True:
-        active = client.get_active_user_broadcasts(max_results=1)
+        try:
+            active = client.get_active_user_broadcasts(max_results=1)
+        except Exception:
+            traceback.print_exc()
+        else:
+            if active and active[0].id not in notified:
+                # gotcha! there's active stream
+                stream = active[0]
 
-        if not active or active[0].id in notified:
-            time.sleep(interval)
-            continue
+                logger.debug("Received: {}", stream)
 
-        # gotcha! there's active stream
-        stream = active[0]
+                # write in cache and
+                notified.write(stream.id)
+                callback(stream)
 
-        logger.debug("Received: {}", stream)
-
-        # write in cache and
-        notified.write(stream.id)
-        callback(stream)
+        time.sleep(interval)
 
 
 def main():

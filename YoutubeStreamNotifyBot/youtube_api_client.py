@@ -16,6 +16,7 @@ import googleapiclient.errors
 from google_auth_oauthlib.flow import InstalledAppFlow
 from google.auth.transport.requests import Request
 from google.oauth2.credentials import Credentials
+from google.auth.exceptions import RefreshError
 from dateutil.parser import isoparse
 
 
@@ -88,7 +89,7 @@ def build_client(
     # check parameters end ------
 
     youtube = googleapiclient.discovery.build(**config, credentials=credential)
-    return YoutubeClient(youtube)
+    return YoutubeClient(youtube, credential)
 
 
 class LazyProperty:
@@ -312,14 +313,19 @@ class Video:
 
 
 class YoutubeClient:
-    def __init__(self, youtube_client):
+    def __init__(self, youtube_client, credential: Credentials):
         self.youtube_client = youtube_client
+        self.credential = credential
+
         self.video_api = self.youtube_client.videos()
         self.channel_api = self.youtube_client.channels()
         self.search_api = self.youtube_client.search()
         self.playlist_item_api = self.youtube_client.playlistItems()
         self.live_streams = self.youtube_client.liveStreams()
         self.live_broadcasts = self.youtube_client.liveBroadcasts()
+
+    def revoke_token(self):
+        self.credential.refresh(Request())
 
     def get_latest_videos(self, channel_id, fetch=3) -> Tuple[Video, ...]:
         # https://stackoverflow.com/a/55373181/10909029
