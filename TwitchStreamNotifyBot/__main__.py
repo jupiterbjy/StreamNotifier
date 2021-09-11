@@ -73,7 +73,7 @@ class RequestInstance:
                     logger.info("Found an active live stream for channel {}", self.channel_name)
 
                     self.notified.write(output.started_at)
-                    self.callback(f"\nhttps://twitch.tv/{self.channel_name}", output)
+                    self.callback(f"https://twitch.tv/{self.channel_name}", output)
 
                 time.sleep(2)
 
