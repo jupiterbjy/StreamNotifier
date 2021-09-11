@@ -28,7 +28,7 @@ class Notified:
         self.file.write_text(new_time, "utf8")
 
     def __contains__(self, item):
-        return item == self.last_notified
+        return item in self.last_notified
 
 
 class RequestInstance:

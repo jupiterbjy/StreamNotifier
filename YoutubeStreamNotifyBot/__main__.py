@@ -29,7 +29,7 @@ class Notified:
         self.file.write_text(new_id, "utf8")
 
     def __contains__(self, item):
-        return item == self.last_notified
+        return item in self.last_notified
 
 
 def callback_notify_closure(notify_callbacks):
