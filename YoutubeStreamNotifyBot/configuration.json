@@ -1,5 +1,8 @@
 {
   "client secret file path": "client_secret.json",
+
+  "discord_report_webhook": "",
+
   "push methods": {
     "discord": {
       "webhook url": "",
@@ -17,10 +20,6 @@
       "access token": "",
       "access token secret": "",
       "content": "Bot Twitter push test\n\n{link}\nStarted at: {started_at}\nGame: {game_name}"
-    },
-    "reddit": {
-      "reddit api": "",
-      "content": "add_some_mention_thingy_here {}"
     }
   }
 }

@@ -10,8 +10,9 @@ from typing import Callable
 from loguru import logger
 
 
-from PushMethod import modules
+from PushMethod import verify_methods
 from twitch_api_client import TwitchClient
+from discord_report import report_closure
 
 
 ROOT = pathlib.Path(__file__).parent.absolute()
@@ -23,6 +24,8 @@ class Notified:
         self.file = args.cache
         self.last_notified = self.file.read_text("utf8") if self.file.exists() else ""
 
+        self.file.touch(exist_ok=True)
+
     def write(self, new_time):
         self.last_notified = new_time
         self.file.write_text(new_time, "utf8")
@@ -32,21 +35,28 @@ class Notified:
 
 
 class RequestInstance:
-    def __init__(self, client: TwitchClient, channel_name, callback: Callable):
+    def __init__(self, client: TwitchClient, channel_name: str, callback: Callable, report: Callable):
 
         self.notified = Notified()
-
         self.client = client
-
         self.channel_name = channel_name
-
         self.callback = callback
+        self.report = report
 
     def start_checking(self):
 
         user = self.client.get_user(self.channel_name)
 
+        # self.report(title="Notifier Started", desc="Debugging info", fields={
+        #     "Target": user.login,
+        #     "Created": user.created_at,
+        #     "Type": user.type,
+        #     "View Count": user.view_count,
+        #     "email": user.email
+        # })
+
         logger.info("Found user: {}", user)
+        last_err = ""
 
         if USE_GET_STREAM:
             logger.info("Started listening using GET_STREAM.")
@@ -54,15 +64,31 @@ class RequestInstance:
 
                 try:
                     output = self.client.get_stream(user.id, log=False)
-                except Exception:
-                    traceback.print_exc()
+
+                except Exception as err:
+                    traceback.print_exc(limit=3)
+                    msg = str(err)
+
+                    if msg != last_err:
+                        self.report(desc=msg)
+                        last_err = msg
+
                 else:
                     if output and output.type == "live" and output.started_at not in self.notified:
                         logger.info("Found an active live stream for channel {}", self.channel_name)
+                        self.report(title="Stream Found", fields={
+                            "Started": output.started_at,
+                            "Title": output.title,
+                            "Type": output.type,
+                            "Content": output.game_name,
+                            "Delay": output.delay,
+                            "Live": output.is_live
+                         })
 
                         self.notified.write(output.started_at)
                         self.callback(f"\nhttps://twitch.tv/{self.channel_name}", output)
 
+                    last_err = ""
                 time.sleep(2)
 
         else:
@@ -110,26 +136,25 @@ def main():
     client_id = config["polling api"]["twitch app id"]
     client_secret = config["polling api"]["twitch app secret"]
 
+    report = report_closure(config)
+
     client = TwitchClient(client_id, client_secret)
 
     logger.info("Target Channel: {}", channel_name)
 
-    callback_list = []
+    callback_list = list(verify_methods(config))
+    names = tuple(x.__class__.__name__ for x in callback_list)
 
-    # verify
-    for method in modules:
-        try:
-            instance = method(config["push methods"])
-        except Exception:
-
-            logger.warning("Got Error initializing {}", method.__name__)
-            traceback.print_exc()
-        else:
-            callback_list.append(instance)
+    logger.info("Verified {}", ", ".join(names))
 
     callback_unified = callback_notify_closure(callback_list)
 
-    req_instance = RequestInstance(client, channel_name, callback_unified)
+    req_instance = RequestInstance(client, channel_name, callback_unified, report)
+
+    report(title="Notifier Started", fields={
+        "Target": channel_name,
+        "Active Push Destination": "\n".join(names)
+    })
 
     req_instance.start_checking()
 
@@ -154,7 +179,7 @@ if __name__ == "__main__":
         metavar="CACHE_PATH",
         type=pathlib.Path,
         default=ROOT.joinpath("cache.json"),
-        help="Path where cache file will be. Default path is 'cache.json' adjacent to this script",
+        help="Path where cache file will be. Default path is 'cache' adjacent to this script",
     )
     parser.add_argument(
         "-t",
@@ -164,8 +189,6 @@ if __name__ == "__main__":
         help="Enable test mode, this does not actually push to platforms.",
     )
     args = parser.parse_args()
-
-    args.cache.touch(exist_ok=True)
 
     # parsing end ===================================
 

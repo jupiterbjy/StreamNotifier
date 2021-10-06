@@ -28,10 +28,10 @@ class DiscordPush(Push):
 
         logger.info("Verification of discord webhook url started.")
 
-        output = requests.get(self.webhook_url).json()
+        response = requests.get(self.webhook_url)
 
-        if not output:
-            raise AssertionError(f"Webhook verification failed! Response:\n{pformat(output)}")
+        if not response:
+            raise AssertionError(f"Webhook verification failed! Response:\n{pformat(response.json())}")
 
         logger.info("Verification of discord webhook url complete.")
 
