@@ -9,14 +9,13 @@ from typing import Callable
 
 from loguru import logger
 
-
 from PushMethod import verify_methods
 from twitch_api_client import TwitchClient
 from discord_report import report_closure
 
-
 ROOT = pathlib.Path(__file__).parent.absolute()
 USE_GET_STREAM = True
+INTERVAL = 2
 
 
 class Notified:
@@ -58,50 +57,57 @@ class RequestInstance:
         logger.info("Found user: {}", user)
         last_err = ""
 
-        if USE_GET_STREAM:
-            logger.info("Started listening using GET_STREAM.")
-            while True:
+        # logger.info("Started listening using GET_STREAM.")
 
-                try:
-                    output = self.client.get_stream(user.id, log=False)
+        logger.info("Started polling for streams, interval: {}", INTERVAL)
 
-                except Exception as err:
-                    traceback.print_exc(limit=3)
-                    msg = str(err)
+        while True:
 
-                    if msg != last_err:
-                        self.report(desc=msg)
-                        last_err = msg
+            try:
+                output = self.client.get_stream(user.id, log=False)
 
+            except Exception as err:
+                msg = str(err)
+
+                if last_err == msg:
+                    logger.critical("Previous Exception still in effect")
                 else:
-                    if output and output.type == "live" and output.started_at not in self.notified:
-                        logger.info("Found an active live stream for channel {}", self.channel_name)
-                        self.report(title="Stream Found", fields={
-                            "Started": output.started_at,
-                            "Title": output.title,
-                            "Type": output.type,
-                            "Content": output.game_name,
-                            "Delay": output.delay,
-                            "Live": output.is_live
-                         })
+                    last_err = msg
+                    traceback.print_exc(limit=4)
+                    self.report(title="Twitch Notifier Down", desc=traceback.format_exc(limit=4))
 
-                        self.notified.write(output.started_at)
-                        self.callback(f"\nhttps://twitch.tv/{self.channel_name}", output)
-
+            else:
+                if last_err:
                     last_err = ""
-                time.sleep(2)
+                    self.report(title="Twitch Notifier Up", desc="Last exception cleared")
 
-        else:
-            while True:
-                output = self.client.search_channel(user.login)
-
-                if output.is_live and output.started_at not in self.notified:
+                if output and output.type == "live" and output.started_at not in self.notified:
                     logger.info("Found an active live stream for channel {}", self.channel_name)
+                    self.report(title="Stream Found", fields={
+                        "Started": output.started_at,
+                        "Title": output.title,
+                        "Type": output.type,
+                        "Content": output.game_name,
+                        "Delay": output.delay,
+                        "Live": output.is_live
+                    })
 
                     self.notified.write(output.started_at)
                     self.callback(f"https://twitch.tv/{self.channel_name}", output)
 
-                time.sleep(2)
+            time.sleep(INTERVAL)
+
+        # else:
+        #     while True:
+        #         output = self.client.search_channel(user.login)
+        #
+        #         if output.is_live and output.started_at not in self.notified:
+        #             logger.info("Found an active live stream for channel {}", self.channel_name)
+        #
+        #             self.notified.write(output.started_at)
+        #             self.callback(f"https://twitch.tv/{self.channel_name}", output)
+        #
+        #         time.sleep(2)
 
 
 def callback_notify_closure(notify_callbacks):
@@ -129,7 +135,6 @@ def callback_notify_closure(notify_callbacks):
 
 
 def main():
-
     config = json.loads(args.path.read_text(encoding="utf8"))
 
     channel_name = config["channel name"]
@@ -160,7 +165,6 @@ def main():
 
 
 if __name__ == "__main__":
-
     # parsing start =================================
 
     parser = argparse.ArgumentParser()

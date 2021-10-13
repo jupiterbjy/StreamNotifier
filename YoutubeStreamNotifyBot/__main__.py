@@ -64,15 +64,27 @@ def start_checking(client: YoutubeClient, callback: Callable, interval, report: 
 
     logger.info("Started polling for streams, interval: {}", interval)
 
+    last_err = ""
+
     while True:
         try:
             active = client.get_active_user_broadcasts(max_results=1)
 
         except Exception as err:
-            traceback.print_exc(limit=3)
-            report(desc=err)
+            msg = str(err)
+
+            if last_err == msg:
+                logger.critical("Previous Exception still in effect")
+            else:
+                last_err = msg
+                traceback.print_exc(limit=4)
+                report(title="Youtube Notifier Down", desc=traceback.format_exc(limit=4))
 
         else:
+            if last_err:
+                last_err = ""
+                report(title="Youtube Notifier Up", desc="Last exception cleared")
+
             if active and active[0].id not in notified:
                 # gotcha! there's active stream
                 stream = active[0]
