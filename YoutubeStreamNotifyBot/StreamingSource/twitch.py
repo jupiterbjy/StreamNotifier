@@ -1,0 +1,4 @@
+
+
+class TwitchStreamCheck:
+    pass

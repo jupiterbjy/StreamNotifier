@@ -11,8 +11,8 @@ if TYPE_CHECKING:
 
 
 class Push:
-    """ABC for all push methods"""
+    """ABC for all push_methods"""
 
-    def send(self, channel_object: "LiveBroadcast"):
+    def send(self, content: str, channel_object: "LiveBroadcast"):
         """Formats text with contents and sends to respective platforms."""
         raise NotImplementedError

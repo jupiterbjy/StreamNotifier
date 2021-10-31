@@ -1,25 +1,56 @@
 {
-  "client secret file path": "client_secret.json",
-
+  "test_mode": false,
   "discord_report_webhook": "",
 
-  "push methods": {
+  "sources": {
+    "youtube": {
+      "enabled": true,
+      "cache_path": "cache_youtube.json",
+
+      "token_path": "token.json",
+      "client_secret_path": "client_secret.json",
+      "interval": 10,
+      "suppress_http_500": true,
+
+      "push_message": {
+        "discord": "<@&discord_role_id_here> Live now on Youtube!\n{link}\nStarted at: {started_at}\nGame: {game_name}",
+        "telegram": "Test Push {link}\nStarted at: {started_at}\nGame: {game_name}",
+        "twitter": "Bot Twitter push test\n\n{link}\nStarted at: {started_at}\nGame: {game_name}"
+      }
+    },
+
+    "twitch": {
+      "enabled": true,
+      "cache_path": "cache_twitch.json",
+
+      "channel_name": "",
+      "twitch_app_id": "",
+      "twitch_app_secret": "",
+
+      "push_message": {
+        "discord": "<@&discord_role_id_here> Live now on Twitch!\n{link}\nStarted at: {started_at}\nGame: {game_name}",
+        "telegram": "Live now on Twitch!\n{link}\nStarted at: {started_at}\nGame: {game_name}",
+        "twitter": "Live now on Twitch!\n{link}\nStarted at: {started_at}\nGame: {game_name}"
+      }
+    }
+  },
+
+  "push_methods": {
     "discord": {
-      "webhook url": "",
-      "content": "<@&discord_role_id> Live now! {}\nStarted at: {started_at}\nGame: {game_name}"
+      "enabled": true,
+      "webhook_url": ""
     },
     "telegram": {
+      "enabled": true,
       "token": "",
-      "chat id": [],
-      "content": "Test Push {link}\nStarted at: {started_at}\nGame: {game_name}"
+      "chat_id": []
     },
     "twitter": {
-      "api key": "",
-      "api secret key": "",
-      "bearer token": "Unused for now",
-      "access token": "",
-      "access token secret": "",
-      "content": "Bot Twitter push test\n\n{link}\nStarted at: {started_at}\nGame: {game_name}"
+      "enabled": true,
+      "api_key": "",
+      "api_secret_key": "",
+      "access_token": "",
+      "access_token_secret": ""
     }
   }
 }

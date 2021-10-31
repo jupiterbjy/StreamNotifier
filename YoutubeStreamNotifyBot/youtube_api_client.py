@@ -12,7 +12,6 @@ import datetime
 from typing import Tuple, Union
 
 import googleapiclient.discovery
-import googleapiclient.errors
 from google_auth_oauthlib.flow import InstalledAppFlow
 from google.auth.transport.requests import Request
 from google.oauth2.credentials import Credentials

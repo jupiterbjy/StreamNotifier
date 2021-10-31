@@ -1,29 +1,28 @@
 {
-  "channel name": "",
+  "channel_name": "",
 
-  "polling api": {
-    "twitch app id": "",
-    "twitch app secret": ""
+  "polling_api": {
+
   },
 
   "discord_report_webhook": "",
 
-  "push methods": {
+  "push_methods": {
     "discord": {
-      "webhook url": "",
+      "webhook_url": "",
       "content": "<@&discord_role_id> Live now! {}\nStarted at: {started_at}\nGame: {game_name}"
     },
     "telegram": {
       "token": "",
-      "chat id": [],
+      "chat_id": [],
       "content": "Test Push {link}\nStarted at: {started_at}\nGame: {game_name}"
     },
     "twitter": {
-      "api key": "",
-      "api secret key": "",
-      "bearer token": "Unused for now",
-      "access token": "",
-      "access token secret": "",
+      "api_key": "",
+      "api_secret_key": "",
+      "bearer_token": "Unused for now",
+      "access_token": "",
+      "access_token_secret": "",
       "content": "Bot Twitter push test\n\n{link}\nStarted at: {started_at}\nGame: {game_name}"
     }
   }

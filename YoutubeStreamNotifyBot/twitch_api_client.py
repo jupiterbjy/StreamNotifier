@@ -12,6 +12,21 @@ import requests
 from loguru import logger
 
 
+class LazyProperty:
+    # python cookbook 3E
+
+    def __init__(self, func):
+        self.func = func
+
+    def __get__(self, instance, owner):
+        if instance is None:
+            return self
+        else:
+            value = self.func(instance)
+            setattr(instance, self.func.__name__, value)
+            return value
+
+
 class TwitchGame:
     def __init__(self, **kwargs):
         # https://dev.twitch.tv/docs/api/reference#get-games
@@ -84,6 +99,17 @@ class TwitchChannel:
 
     def as_dict(self):
         return vars(self)
+
+    @LazyProperty
+    def link(self):
+        """
+        This is Property - access like an attribute
+
+        Returns:
+            url of the channel
+        """
+
+        return f"https://twitch.tv/{self.broadcaster_login}"
 
 
 class TwitchClient:

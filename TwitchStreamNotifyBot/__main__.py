@@ -137,9 +137,9 @@ def callback_notify_closure(notify_callbacks):
 def main():
     config = json.loads(args.path.read_text(encoding="utf8"))
 
-    channel_name = config["channel name"]
-    client_id = config["polling api"]["twitch app id"]
-    client_secret = config["polling api"]["twitch app secret"]
+    channel_name = config["channel_name"]
+    client_id = config["polling_api"]["twitch_app_id"]
+    client_secret = config["polling_api"]["twitch_app_secret"]
 
     report = report_closure(config)
 

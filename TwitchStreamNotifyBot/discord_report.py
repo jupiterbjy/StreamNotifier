@@ -21,7 +21,7 @@ def report_closure(config: dict):
         logger.info("Discord Reporting Webhook URL is empty")
 
     except AssertionError:
-        # invalid webhook url or unstable network
+        # invalid webhook_url or unstable network
         try:
             response = output.json()
         except AttributeError:

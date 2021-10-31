@@ -1,6 +1,6 @@
 loguru
 tweepy
-discord-webhook
+trio
 python-telegram-bot
 google-api-python-client
 python-dateutil

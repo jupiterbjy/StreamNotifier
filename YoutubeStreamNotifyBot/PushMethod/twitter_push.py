@@ -14,13 +14,11 @@ class TwitterPush(Push):
     def __init__(self, config: dict):
         self.config = config["twitter"]
 
-        self.content: str = self.config["content"]
+        self.api_key = self.config["api_key"]
+        self.api_secret = self.config["api_secret_key"]
 
-        self.api_key = self.config["api key"]
-        self.api_secret = self.config["api secret key"]
-
-        self.token = self.config["access token"]
-        self.token_secret = self.config["access token secret"]
+        self.token = self.config["access_token"]
+        self.token_secret = self.config["access_token secret"]
 
         self.api: Union[None, tweepy.API] = None
 
@@ -28,9 +26,8 @@ class TwitterPush(Push):
 
     def auth(self):
 
-        if not all((self.api_key, self.api_secret, self.token, self.token_secret)):
-            logger.info("One or more Twitter parameters empty, skipping.")
-            raise ValueError("One or more Twitter parameters empty, skipping.")
+        if not self.config["enabled"]:
+            raise AssertionError("Twitter Push Disabled, skipping.")
 
         logger.info("Twitch auth started.")
 
@@ -42,9 +39,9 @@ class TwitterPush(Push):
 
         logger.info("Twitch auth complete.")
 
-    def send(self, channel_object: "LiveBroadcast"):
+    def send(self, content, channel_object: "LiveBroadcast"):
 
         dict_ = channel_object.as_dict()
-        self.api.update_status(self.content.format(**dict_))
+        self.api.update_status(content.format(**dict_))
 
         logger.info("Notified to twitter.")

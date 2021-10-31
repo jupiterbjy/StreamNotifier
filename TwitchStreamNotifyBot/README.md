@@ -54,27 +54,29 @@ Any misconfiguration will render respective push platform unusable. Please keep 
 
 ```json
 {
-  "channel name": "<Twitch_channel_name>",
-  "polling api": {
-    "twitch app id": "<twitch_app_id_here>",
-    "twitch app secret": "<twitch_app_secret_here>"
+  "channel_name": "<Twitch_channel_name>",
+  "polling_api": {
+    "twitch_app_id": "<twitch_app_id_here>",
+    "twitch_app_secret": "<twitch_app_secret_here>"
   },
-  "push methods": {
+  "push_methods": {
     "discord": {
-      "webhook url": "<discord_webhook_url>",
+      "webhook_url": "<discord_webhook_url>",
       "content": "<@&discord_role_id> Live now! {}\nStarted at: {started_at}\nGame: {game_name}"
     },
     "telegram": {
       "token": "<telegram_bot_token>",
-      "chat id": ["<telegram_chat_id_here_as_integer>"],
+      "chat_id": [
+        "<telegram_chat_id_here_as_integer>"
+      ],
       "content": "Test Push {link}\nStarted at: {started_at}\nGame: {game_name}"
     },
     "twitter": {
-      "api key": "<api key>",
-      "api secret key": "<api secret key>",
-      "bearer token": "Unused for now",
-      "access token": "<access token>",
-      "access token secret": "<access token secret>",
+      "api_key": "<api_key>",
+      "api_secret_key": "<api_secret_key>",
+      "bearer_token": "Unused for now",
+      "access_token": "<access_token>",
+      "access_token_secret": "<access_token secret>",
       "content": "Bot Twitter push test\n\n{link}\nStarted at: {started_at}\nGame: {game_name}"
     },
     "reddit": {

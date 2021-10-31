@@ -61,23 +61,25 @@ Any misconfiguration will render respective push platform unusable. Please keep 
 
 ```json
 {
-  "client secret file path": "client_secret_location",
-  "push methods": {
+  "client_secret_path": "client_secret_location",
+  "push_methods": {
     "discord": {
-      "webhook url": "<discord_webhook_url>",
+      "webhook_url": "<discord_webhook_url>",
       "content": "Test push\n\ntitle: [{title}]\ndescription: [{description}]\ntype: [{privacy_status}]\nurl: [{link}]"
     },
     "telegram": {
       "token": "<telegram_bot_token>",
-      "chat id": ["<telegram_chat_id_here_as_integer>"],
+      "chat_id": [
+        "<telegram_chat_id_here_as_integer>"
+      ],
       "content": "Test push\n\ntitle: [{title}]\ndescription: [{description}]\ntype: [{privacy_status}]\nurl: [{link}]"
     },
     "twitter": {
-      "api key": "<api key>",
-      "api secret key": "<api secret key>",
-      "bearer token": "Unused for now",
-      "access token": "<access token>",
-      "access token secret": "<access token secret>",
+      "api_key": "<api_key>",
+      "api_secret_key": "<api_secret_key>",
+      "bearer_token": "Unused for now",
+      "access_token": "<access_token>",
+      "access_token_secret": "<access_token secret>",
       "content": "Test push\n\ntitle: [{title}]\ndescription: [{description}]\ntype: [{privacy_status}]\nurl: [{link}]"
     },
     "reddit": {
